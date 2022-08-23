@@ -1,4 +1,4 @@
 class APIEndpoint:
-    COMMUNITY_URL = 'https://store.steampowered.com/'
+    COMMUNITY_URL = 'https://steamcommunity.com/'
     STORE_URL = 'https://store.steampowered.com/'
     
