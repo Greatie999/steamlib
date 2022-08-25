@@ -1,4 +1,14 @@
 class InvalidDataError(Exception):
-    
-    def __str__(self) -> str:
-        return 'Invalid login, password or 2FA'
+    pass
+
+
+class TooManyLoginFailures(Exception):
+    pass
+
+
+class FailToLogout(Exception):
+    pass
+
+
+class LoginRequired(Exception):
+    pass
