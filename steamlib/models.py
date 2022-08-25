@@ -15,3 +15,5 @@ class Game:
     CSGO = {"app_id": 730, "context_id": 2}
     DOTA2 = {"app_id": 570, "context_id": 2}
     TF2 = {"app_id": 440, "context_id": 2}
+
+
