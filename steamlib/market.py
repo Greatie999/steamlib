@@ -1,17 +1,14 @@
-import os
 from decimal import Decimal
 import urllib.parse
 
 from models import Currency, Game, APIEndpoint
-from client import SteamClient
 from exceptions import ApiException, TooManyRequests
 from utils import get_buy_orders, get_sell_items
 
 
 class SteamMarket:
-    def __init__(self):
-        steam_client = SteamClient("test")
-        self._session = steam_client.login("test", os.getenv("STEAM_PASSWORD"))
+    def __init__(self, session):
+        self._session = session
         self._session_id = self._session.cookies.get_dict()["sessionid"]
         self._cookies = self._session.cookies.get_dict()
 
@@ -26,7 +23,7 @@ class SteamMarket:
             "amount": amount,
             "price": price,
         }
-        steam_id = "need"
+        steam_id = self._cookies["steam_id"]
         headers = {
             "Referer": "%sprofiles/%s/inventory" % (APIEndpoint.COMMUNITY_URL, steam_id)
         }
@@ -138,18 +135,3 @@ class SteamMarket:
                 "Message: Incorrect item_nameid %s" % (response.status_code)
             )
         return response.json()
-
-    def get_inventory(self, game: Game) -> list:
-        params = {"l": "english"}
-        steam_id = "need"
-        response = self._session.get(
-            "%sinventory/%s/%s/%s"
-            % (APIEndpoint.COMMUNITY_URL, steam_id, game["app_id"], game["context_id"]),
-            params=params,
-        )
-        if response.status_code != 200 or response.json()["success"] != 1:
-            raise ApiException(
-                "Message: Failed to get your inventory, check input game, status: %s"
-                % (response.status_code)
-            )
-        return response.json()["descriptions"]
