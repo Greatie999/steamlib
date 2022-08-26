@@ -14,7 +14,8 @@ class LoginExecutor:
             raise InvalidDataError("Username and password can't be None")
         self._username = username
         self._password = password
-        # self._twofactorcode = input('Code: ')
+        self._twofactor_code = ""
+        self._email_code = ""
         self._captcha_gid = -1
         self._captcha_text = ""
         self._session = session
@@ -34,6 +35,18 @@ class LoginExecutor:
         resp = self._session.post(
             f"{APIEndpoint.COMMUNITY_URL}login/dologin/", data=data
         ).json()
+        
+        if resp.get('requires_twofactor', False):
+            self._twofactorcode = input('Steamguard code: ')
+            
+        if resp.get('emailauth_needed', False):
+            self._email_code = input('Email code: ')
+            
+        if resp.get("captcha_needed", False):
+            self._captcha_gid = resp["captcha_gid"]
+            self._captcha_text = input(
+                f"You need to solve CAPTCHA, link: {self._captcha_url}.\nCAPTCHA code: "
+            )
 
         if "account name or password" in resp.get("message", ""):
             raise InvalidDataError(resp["message"])
@@ -41,11 +54,6 @@ class LoginExecutor:
         if "too many login failures" in resp.get("message", ""):
             raise TooManyLoginFailures(resp["message"])
 
-        if resp.get("captcha_needed", False):
-            self._captcha_gid = resp["captcha_gid"]
-            self._captcha_text = input(
-                f"You need to solve CAPTCHA, link: {self._captcha_url}.\nCAPTCHA code: "
-            )
         return resp
 
     @staticmethod
@@ -87,8 +95,8 @@ class LoginExecutor:
         return {
             "password": self._encrypted_password,
             "username": self._username,
-            "twofactorcode": input("Code: "),
-            "emailauth": "",
+            "twofactorcode": self._twofactor_code,
+            "emailauth": self._email_code,
             "loginfriendlyname": "webauth",
             "captchagid": self._captcha_gid,
             "captcha_text": self._captcha_text,
@@ -118,10 +126,7 @@ class LoginExecutor:
 
 class MobileLoginExecutor(LoginExecutor):
     def oauth_login(self) -> requests.Session:
-        resp = self._send_oauth_login()
-
-        while not resp["success"]:
-            resp = self._send_login()
+        self._send_oauth_login()
 
         if not hasattr(self, "_steam_id"):
             raise Exception("No steam_id")
@@ -135,8 +140,6 @@ class MobileLoginExecutor(LoginExecutor):
             f"{APIEndpoint.API_URL}IMobileAuthService/GetWGToken/v0001", data=data
         ).json()
 
-        # print(resp)
-
         self._session_id = self._session.get(
             APIEndpoint.COMMUNITY_URL
         ).cookies.get_dict()["sessionid"]
@@ -147,6 +150,8 @@ class MobileLoginExecutor(LoginExecutor):
     def _send_oauth_login(self) -> requests.Response:
         self._set_client_cookies()
         resp = self._send_login()
+        while not resp["success"]:
+            resp = self._send_login()
         self._pop_client_cookies()
         self._finalize_login(resp)
         return resp
@@ -167,9 +172,9 @@ class MobileLoginExecutor(LoginExecutor):
     def _set_mobile_cookies(self, resp_data: dict) -> None:
 
         for domain in [
-            "store.steampowered.com",
-            "help.steampowered.com",
-            "steamcommunity.com",
+            APIEndpoint.STORE_URL[8:-1],
+            APIEndpoint.HELP_URL[8:-1],
+            APIEndpoint.COMMUNITY_URL[8:-1],
         ]:
             self._session.cookies.set("birthtime", "-3333", domain=domain)
             self._session.cookies.set("sessionid", self._session_id, domain=domain)
@@ -188,14 +193,15 @@ class MobileLoginExecutor(LoginExecutor):
             )
             self._session.cookies.set("Steam_Language", "english", domain=domain)
         self._session.cookies.set("steam_id", self._steam_id)
+        self._session.cookies.set("oauth_token", self._oauth_token)
 
     def _prepare_login_data(self) -> dict:
         timestamp = self._get_rsa_data()["rsa_timestamp"]
         return {
             "password": self._encrypted_password,
             "username": self._username,
-            "twofactorcode": input("Code: "),
-            "emailauth": "",
+            "twofactorcode": self._twofactor_code,
+            "emailauth": self._email_code,
             "loginfriendlyname": "mobilewebauth",
             "captchagid": self._captcha_gid,
             "captcha_text": self._captcha_text,
