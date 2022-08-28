@@ -2,8 +2,8 @@ class APIEndpoint:
     COMMUNITY_URL = "https://steamcommunity.com/"
     STORE_URL = "https://store.steampowered.com/"
     API_URL = "https://api.steampowered.com/"
-    HELP_URL = 'https://help.steampowered.com/'
-    TWO_FACTOR_URL = f'{API_URL}ITwoFactorService/'
+    HELP_URL = "https://help.steampowered.com/"
+    TWO_FACTOR_URL = f"{API_URL}ITwoFactorService/"
 
 
 class Currency:

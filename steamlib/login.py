@@ -35,13 +35,13 @@ class LoginExecutor:
         resp = self._session.post(
             f"{APIEndpoint.COMMUNITY_URL}login/dologin/", data=data
         ).json()
-        
-        if resp.get('requires_twofactor', False):
-            self._twofactor_code = input('Steamguard code: ')
-            
-        if resp.get('emailauth_needed', False):
-            self._email_code = input('Email code: ')
-            
+
+        if resp.get("requires_twofactor", False):
+            self._twofactor_code = input("Steamguard code: ")
+
+        if resp.get("emailauth_needed", False):
+            self._email_code = input("Email code: ")
+
         if resp.get("captcha_needed", False):
             self._captcha_gid = resp["captcha_gid"]
             self._captcha_text = input(
@@ -139,7 +139,7 @@ class MobileLoginExecutor(LoginExecutor):
         resp = self._session.post(
             f"{APIEndpoint.API_URL}IMobileAuthService/GetWGToken/v0001", data=data
         ).json()
-    
+
         self._session_id = self._session.get(
             APIEndpoint.COMMUNITY_URL
         ).cookies.get_dict()["sessionid"]

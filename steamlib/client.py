@@ -1,4 +1,3 @@
-import os
 import requests
 
 from login import MobileLoginExecutor
@@ -13,6 +12,7 @@ def login_required(func):
         if not self.logged_in:
             raise LoginRequired("You need to login")
         return func(self, *args, **kwargs)
+
     return func_wrapper
 
 
@@ -65,14 +65,14 @@ class SteamClient:
 
     @login_required
     def has_phone_number(self):
-        session_id = self._session.cookies.get('sessionid', domain='steamcommunity.com')
+        session_id = self._session.cookies.get("sessionid", domain="steamcommunity.com")
         data = {
-            'op': 'has_phone',
-            'arg': '0',
-            'checkfortos': 0,
-            'skipvoip': 1,
-            'sessionid': session_id,
+            "op": "has_phone",
+            "arg": "0",
+            "checkfortos": 0,
+            "skipvoip": 1,
+            "sessionid": session_id,
         }
-        url = f'{APIEndpoint.COMMUNITY_URL}steamguard/phoneajax'
+        url = f"{APIEndpoint.COMMUNITY_URL}steamguard/phoneajax"
         resp = self._session.post(url, data=data, timeout=15).json()
-        return resp['has_phone']
+        return resp["has_phone"]
