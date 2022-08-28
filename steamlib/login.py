@@ -37,7 +37,7 @@ class LoginExecutor:
         ).json()
         
         if resp.get('requires_twofactor', False):
-            self._twofactorcode = input('Steamguard code: ')
+            self._twofactor_code = input('Steamguard code: ')
             
         if resp.get('emailauth_needed', False):
             self._email_code = input('Email code: ')
@@ -139,7 +139,7 @@ class MobileLoginExecutor(LoginExecutor):
         resp = self._session.post(
             f"{APIEndpoint.API_URL}IMobileAuthService/GetWGToken/v0001", data=data
         ).json()
-
+    
         self._session_id = self._session.get(
             APIEndpoint.COMMUNITY_URL
         ).cookies.get_dict()["sessionid"]

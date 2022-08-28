@@ -3,6 +3,7 @@ class APIEndpoint:
     STORE_URL = "https://store.steampowered.com/"
     API_URL = "https://api.steampowered.com/"
     HELP_URL = 'https://help.steampowered.com/'
+    TWO_FACTOR_URL = f'{API_URL}ITwoFactorService/'
 
 
 class Currency:
