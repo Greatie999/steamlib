@@ -26,3 +26,11 @@ class ApiException(Exception):
 class InvalidUrlException(Exception):
     def __str__(self) -> str:
         return "Invalid url"
+
+
+class NoConfirmations(Exception):
+    pass
+
+
+class BanException(Exception):
+    pass

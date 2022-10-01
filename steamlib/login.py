@@ -1,9 +1,9 @@
-import time
-import requests
-import rsa
 import base64
 import json
+import time
 
+import requests
+import rsa
 from exceptions import InvalidDataError, TooManyLoginFailures
 from models import APIEndpoint
 
@@ -35,6 +35,9 @@ class LoginExecutor:
         resp = self._session.post(
             f"{APIEndpoint.COMMUNITY_URL}login/dologin/", data=data
         ).json()
+
+        if not resp["success"]:
+            return resp
 
         if resp.get("requires_twofactor", False):
             self._twofactor_code = input("Steamguard code: ")
@@ -125,8 +128,17 @@ class LoginExecutor:
 
 
 class MobileLoginExecutor(LoginExecutor):
-    def oauth_login(self) -> requests.Session:
-        self._send_oauth_login()
+    def oauth_login(
+        self, twofactor_code="", email_code="", captcha={}
+    ) -> requests.Session:
+        self._twofactor_code = twofactor_code
+        self._email_code = email_code
+        self._captcha_text = captcha.get("captcha_text", "")
+        self._captcha_gid = captcha.get("captcha_gid", "")
+        resp = self._send_oauth_login()
+
+        if not resp["success"]:
+            return resp
 
         if not hasattr(self, "_steam_id"):
             raise Exception("No steam_id")
@@ -150,10 +162,9 @@ class MobileLoginExecutor(LoginExecutor):
     def _send_oauth_login(self) -> requests.Response:
         self._set_client_cookies()
         resp = self._send_login()
-        while not resp["success"]:
-            resp = self._send_login()
         self._pop_client_cookies()
-        self._finalize_login(resp)
+        if resp["success"]:
+            self._finalize_login(resp)
         return resp
 
     def _finalize_login(self, login_response: dict) -> None:
