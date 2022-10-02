@@ -4,8 +4,10 @@ import struct
 from base64 import b64decode
 from time import time
 
-from models import APIEndpoint
 from requests import Session
+
+from .models import APIEndpoint
+
 
 
 class SteamGuard:

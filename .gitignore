@@ -15,3 +15,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+dist
+setup.cfg
+setup.py
+*.egg-info

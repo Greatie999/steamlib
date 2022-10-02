@@ -4,8 +4,9 @@ from typing import List
 
 import requests
 from bs4 import BeautifulSoup
-from exceptions import InvalidUrlException
-from models import APIEndpoint, Game
+
+from .exceptions import InvalidUrlException
+from .models import APIEndpoint, Game
 
 
 def get_buy_orders(html: str) -> dict:

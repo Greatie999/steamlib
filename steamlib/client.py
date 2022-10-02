@@ -1,12 +1,11 @@
-import os
-
 import requests
-from exceptions import FailToLogout, LoginRequired
-from guard import SteamGuard
-from login import MobileLoginExecutor
-from market import SteamMarket
-from models import APIEndpoint
-from trade import Trade
+
+from .exceptions import FailToLogout, LoginRequired
+from .guard import SteamGuard
+from .login import MobileLoginExecutor
+from .market import SteamMarket
+from .models import APIEndpoint
+from .trade import Trade
 
 
 def login_required(func):
@@ -17,11 +16,8 @@ def login_required(func):
 
     return func_wrapper
 
-
 class SteamClient:
-    def __init__(
-        self, username: str, password: str, secrets: dict = {}, api_key=None
-    ) -> None:
+    def __init__(self, username: str, password: str, secrets: dict = {}, api_key=None) -> None:
         self._session = requests.Session()
         self.username = username
         self._password = password
@@ -30,12 +26,14 @@ class SteamClient:
         self.secrets = secrets
         self.api_key = api_key
 
-    def login(self) -> None:
-        MobileLoginExecutor(self.username, self._password, self._session).oauth_login()
+    def login(self, twofactor_code='', email_code='', captcha={}) -> None:
+        resp = MobileLoginExecutor(self.username, self._password, self._session).oauth_login(twofactor_code, email_code, captcha)
         self.logged_in = True
-        self.market = SteamMarket(self._session, self.secrets)
-        self.trade = Trade(self._session, self.secrets, self.api_key)
-
+        if self._session.cookies.get_dict().get('sessionid', False):
+            self.market = SteamMarket(self._session, self.secrets)
+            self.trade = Trade(self._session, self.secrets, self.api_key)
+        return resp
+    
     @login_required
     def logout(self) -> None:
         self._session.cookies.clear()
@@ -67,4 +65,3 @@ class SteamClient:
         url = f"{APIEndpoint.COMMUNITY_URL}steamguard/phoneajax"
         resp = self._session.post(url, data=data, timeout=15).json()
         return resp["has_phone"]
-

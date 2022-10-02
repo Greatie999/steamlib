@@ -3,10 +3,10 @@ from decimal import Decimal
 
 from requests import Session
 
-from confirmation import ConfirmExecutor
-from exceptions import ApiException, TooManyRequests
-from models import APIEndpoint, Currency, Game, Tag
-from utils import get_buy_orders, get_sell_items, inventory
+from .confirmation import ConfirmExecutor
+from .exceptions import ApiException, TooManyRequests
+from .models import APIEndpoint, Currency, Game, Tag
+from .utils import get_buy_orders, get_sell_items, inventory
 
 
 class SteamMarket:

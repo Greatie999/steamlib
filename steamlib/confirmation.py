@@ -8,9 +8,10 @@ from typing import List
 
 from requests import Session
 from bs4 import BeautifulSoup
-from exceptions import InvalidDataError, NoConfirmations
-from guard import SteamGuard
-from models import APIEndpoint, Tag
+
+from .exceptions import InvalidDataError, NoConfirmations
+from .guard import SteamGuard
+from .models import APIEndpoint, Tag
 
 
 class Confirmation:

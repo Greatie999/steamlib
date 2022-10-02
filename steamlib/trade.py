@@ -3,10 +3,11 @@ import struct
 import urllib.parse as parse
 from typing import List
 
-from confirmation import Confirm
-from exceptions import ApiException, BanException, InvalidDataError
-from models import APIEndpoint, Game
 from requests import Session
+
+from .confirmation import ConfirmExecutor
+from .exceptions import ApiException, BanException, InvalidDataError
+from .models import APIEndpoint, Game
 
 
 class Trade:
@@ -131,7 +132,7 @@ class Trade:
         if response.get("needs_mobile_confirmation") and self.secrets.get(
             "identity_secret"
         ):
-            confirm = Confirm(self._session, self.secrets["identity_secret"])
+            confirm = ConfirmExecutor(self._session, self.secrets["identity_secret"])
             confirm.confirm_trade_offers(response["tradeofferid"])
         return response
 
@@ -172,6 +173,6 @@ class Trade:
         if response.get("needs_mobile_confirmation") and self.secrets.get(
             "identity_secret"
         ):
-            confirm = Confirm(self._session, self.secrets["identity_secret"])
+            confirm = ConfirmExecutor(self._session, self.secrets["identity_secret"])
             confirm.confirm_trade_offers(trade_offer_id)
         return response
