@@ -26,8 +26,8 @@ class SteamClient:
         self.secrets = secrets
         self.api_key = api_key
 
-    def login(self, twofactor_code='', email_code='', captcha={}) -> None:
-        resp = MobileLoginExecutor(self.username, self._password, self._session).oauth_login(twofactor_code, email_code, captcha)
+    def login(self, twofactor_code='', email_code='', captcha={}, cli=False) -> None:
+        resp = MobileLoginExecutor(self.username, self._password, self._session).oauth_login(twofactor_code, email_code, captcha, cli)
         self.logged_in = True
         if self._session.cookies.get_dict().get('sessionid', False):
             self.market = SteamMarket(self._session, self.secrets)

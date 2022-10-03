@@ -31,14 +31,15 @@ class LoginExecutor:
         self._set_session_id()
         return self._session
 
-    def _send_login(self) -> requests.Response:
+    def _send_login(self, cli: bool = False) -> requests.Response:
         data = self._prepare_login_data()
         resp = self._session.post(
             f"{APIEndpoint.COMMUNITY_URL}login/dologin/", data=data
         ).json()
         
-        if not resp['success']:
-            return resp 
+        if not cli:
+            if not resp['success']:
+                return resp 
 
         if resp.get("requires_twofactor", False):
             self._twofactor_code = input("Steamguard code: ")
@@ -129,12 +130,17 @@ class LoginExecutor:
 
 
 class MobileLoginExecutor(LoginExecutor):
-    def oauth_login(self, twofactor_code: str = '', email_code: str = '', captcha: dict = {}) -> requests.Session:
+    def oauth_login(self, twofactor_code: str = '', email_code: str = '', captcha: dict = {}, cli: bool = False) -> requests.Session:
         self._twofactor_code = twofactor_code
         self._email_code = email_code
         self._captcha_text = captcha.get('captcha_text', '')
         self._captcha_gid = captcha.get('captcha_gid', '')
-        resp = self._send_oauth_login()
+        self.cli = cli
+        if self.cli:
+            resp = self._send_cli_oauth_login()
+            print(resp)
+        else:
+            resp = self._send_oauth_login()
         
         if not resp['success']:
             return resp
@@ -158,6 +164,15 @@ class MobileLoginExecutor(LoginExecutor):
 
         return self._session
 
+    def _send_cli_oauth_login(self):
+        self._set_client_cookies()
+        resp = self._send_login(cli=self.cli)
+        while not resp['success']:
+            resp = self._send_login(cli=self.cli)
+        self._pop_client_cookies()
+        self._finalize_login(resp)
+        return resp
+    
     def _send_oauth_login(self) -> requests.Response:
         self._set_client_cookies()
         resp = self._send_login()
