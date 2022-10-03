@@ -108,6 +108,16 @@ class SteamGuard:
             return None
         time_now = int(time())
         return int(response.get("response", {}).get("server_time", time_now)) - time_now
+    
+    @property
+    def status(self) -> dict:
+        params = {
+            'steamid': self._cookies.get("steam_id"),
+            "access_token": self._cookies.get("oauth_token"),
+            "http_timeout": 10
+        }
+        response = self._session.post(f'{APIEndpoint.TWO_FACTOR_URL}QueryStatus/v1/', params=params).json()
+        return response
 
     @property
     def deviceid(self) -> str:
