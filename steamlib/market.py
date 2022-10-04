@@ -63,7 +63,7 @@ class SteamMarket:
             "Referer": f"{APIEndpoint.COMMUNITY_URL}market/listings/{app_id}/{item_url}"
         }
         response = self._session.post(
-            f'{APIEndpoint.COMMUNITY_URL}"market/createbuyorder/',
+            f'{APIEndpoint.COMMUNITY_URL}market/createbuyorder/',
             data=data,
             headers=headers,
             cookies=self._cookies,
