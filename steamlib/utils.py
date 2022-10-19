@@ -17,6 +17,7 @@ def get_buy_orders(html: str) -> dict:
     for order in buy_orders_card:
         buy_order_id = order.get("id").split("_")[1]
         name = order.find(class_="market_listing_item_name_link").text
+        name = name.replace('Unknown item: ', '').strip()
         price = (
             order.findAll(class_="market_listing_price")[0]
             .text.replace("2 @", "")
@@ -102,7 +103,7 @@ def get_description_key(item: dict) -> str:
     return item["classid"] + "_" + item["instanceid"]
 
 
-def inventory(response: dict, game: Game) -> List[dict]:
+def inventory(response: dict, game: Game, marketable: bool) -> List[dict]:
     descriptions = {
         get_description_key(description): description
         for description in response["descriptions"]
@@ -115,5 +116,6 @@ def inventory(response: dict, game: Game) -> List[dict]:
         description["contextid"] = item.get("contextid") or game["context_id"]
         description["assetid"] = item_id
         description["amount"] = item["amount"]
-        merged_items.append(description)
+        if marketable and description["marketable"] == 1:
+            merged_items.append(description)
     return merged_items

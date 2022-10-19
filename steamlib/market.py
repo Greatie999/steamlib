@@ -139,17 +139,19 @@ class SteamMarket:
             raise ApiException(f"Message: Incorrect item_nameid {response.status_code}")
         return response.json()
 
-    def get_inventory(self, game: Game) -> list:
+    def get_inventory(self, game: Game, marketable: bool) -> list:
         params = {"l": "english", "count": 5000}
         steam_id = self._session.cookies.get_dict()["steam_id"]
         response = self._session.get(
             f"{APIEndpoint.COMMUNITY_URL}inventory/{steam_id}/{game['app_id']}/{game['context_id']}",
             params=params,
         )
-        if response.status_code != 200 or response.json()["success"] != 1:
+        res_json = response.json()
+        if not res_json.get('descriptions'):
+            return res_json
+        if response.status_code != 200 or res_json["success"] != 1:
             raise ApiException(
                 f"Message: Failed to get your inventory, check input game, status: {response.status_code}"
             )
-        res_json = response.json()
-        inv = inventory(res_json, game)
+        inv = inventory(res_json, game, marketable)
         return inv
