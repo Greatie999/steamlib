@@ -4,10 +4,12 @@ from typing import List
 
 import requests
 from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
 
 from .exceptions import InvalidUrlException
 from .models import APIEndpoint, Game
 
+ua = UserAgent()
 
 def get_buy_orders(html: str) -> dict:
     buy_orders = {}
@@ -67,32 +69,42 @@ def get_item_name_id_by_url(item_url: str) -> str:
     return result
 
 
-def get_lowest_sell_order(currency, item_name_id: str) -> dict:
+def get_lowest_sell_order(currency, item_name_id: str, item_url: str) -> dict:
     params = {
-        "item_nameid": item_name_id,
-        "currency": currency,
-        "two_factor": 0,
-        "language": "english",
         "country": "UA",
+        "language": "english",
+        "currency": str(currency),
+        "item_nameid": item_name_id,
+        "two_factor": '0',
+    }
+    headers = {
+        'Referer': item_url,
+        'User-Agent': ua.chrome,
+        'X-Requested-With': 'XMLHttpRequest',
     }
     response = requests.get(
-        f"{APIEndpoint.COMMUNITY_URL}market/itemordershistogram", params=params
+        f"{APIEndpoint.COMMUNITY_URL}market/itemordershistogram", params=params, headers=headers
     ).json()
     full = response["sell_order_graph"][0][0]
     pennies = response["lowest_sell_order"]
     return {"full": full, "pennies": pennies}
 
 
-def get_highest_buy_order(currency, item_name_id: str) -> dict:
+def get_highest_buy_order(currency, item_name_id: str, item_url: str) -> dict:
     params = {
-        "item_nameid": item_name_id,
-        "currency": currency,
-        "two_factor": 0,
-        "language": "english",
         "country": "UA",
+        "language": "english",
+        "currency": str(currency),
+        "item_nameid": item_name_id,
+        "two_factor": '0',
+    }
+    headers = {
+        'Referer': item_url,
+        'User-Agent': ua.chrome,
+        'X-Requested-With': 'XMLHttpRequest',
     }
     response = requests.get(
-        f"{APIEndpoint.COMMUNITY_URL}market/itemordershistogram", params=params
+        f"{APIEndpoint.COMMUNITY_URL}market/itemordershistogram", params=params, headers=headers
     ).json()
     full = response["buy_order_graph"][0][0]
     pennies = response["highest_buy_order"]
